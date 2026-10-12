@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>50 States of Energy Affordability: Sept 2026 Actions</title>
+<style>
+:root{
+  --font-anthropic-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-anthropic-serif: Georgia, "Times New Roman", serif;
+  --color-fg:#1f1e1d; --color-fg-muted:#6b6966; --color-bg:#faf9f7; --color-panel:#ffffff; --color-border-line:#e4e1dc;
+  --color-ok:#2f7d4f; --color-warn:#a8650b; --color-bad:#c0392b;
+  --cds-font-size-caption:.8125rem; --cds-font-size-body:.9375rem; --cds-font-size-heading:1.0625rem; --cds-font-size-title:1.875rem;
+  --cds-font-weight-medium:550;
+  --cds-gap-xs:.25rem; --cds-gap-sm:.5rem; --cds-gap-md:1rem; --cds-gap-lg:1.5rem;
+  --cds-pad-xs:.25rem; --cds-pad-sm:.5rem; --cds-pad-lg:1.25rem; --cds-radius:.5rem;
+  --cds-surface-popover:#ffffff; --cds-border:#e4e1dc; --cds-shadow-popover:0 4px 16px rgba(0,0,0,.12); --cds-text-secondary:#6b6966;
+  --cds-dur-slow:.3s;
+}
+@media (prefers-color-scheme: dark){:root{
+  --color-fg:#ecebe8; --color-fg-muted:#a3a19c; --color-bg:#1c1b1a; --color-panel:#262524; --color-border-line:#3a3836;
+  --cds-surface-popover:#2e2d2b; --cds-border:#3a3836; --cds-shadow-popover:0 4px 16px rgba(0,0,0,.5); --cds-text-secondary:#a3a19c;
+}}
+html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);}
+#dash-root{max-width:90rem;margin:0 auto;padding:clamp(1rem,3vw,2.5rem);box-sizing:border-box;}
+#dash-root .dash-skeleton{color:transparent;background:var(--color-border-line);border-radius:4px;}
+#dash-root .ea-map.dash-skeleton,#dash-root .ea-bars.dash-skeleton{min-height:10rem;}
+#dash-root .ea-foot{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin-top:1.5rem;}
+
+#dash-root .ea { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+#dash-root .ea-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+#dash-root .ea-take { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: 0; max-width: 60rem; }
+#dash-root .ea-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+#dash-root .ea-filters select, #dash-root .ea-filters input, #dash-root .ea-btn {
+  font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-panel);
+  border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); max-width: 100%; }
+#dash-root .ea-filters input { min-width: 12rem; flex: 1 1 12rem; }
+#dash-root .ea-btn { cursor: pointer; }
+#dash-root .ea-chip { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+#dash-root .ea-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-md); }
+#dash-root .ea-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); position: relative; min-width: 0; }
+#dash-root .ea-kpi .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+#dash-root .ea-kpi .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin-top: var(--cds-gap-xs); }
+#dash-root .ea-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+#dash-root .ea-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-md); }
+#dash-root .ea-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+#dash-root .ea-smalls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); }
+#dash-root .ea-small { cursor: pointer; border: 1px solid transparent; border-radius: var(--cds-radius); padding: var(--cds-pad-xs); }
+#dash-root .ea-small.on { border-color: var(--color-fg); }
+#dash-root .ea-small .t { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); display: flex; justify-content: space-between; gap: var(--cds-gap-sm); }
+#dash-root .ea-small .t span:last-child { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+#dash-root .ea-map { min-height: 12rem; }
+#dash-root .ea-map svg text { pointer-events: none; font-family: var(--font-anthropic-sans); }
+#dash-root .ea-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius);
+  box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); z-index: 5; max-width: 18rem; }
+#dash-root .ea-tip .h { color: var(--cds-text-secondary); margin-bottom: 2px; }
+#dash-root .ea-tip .r { display: flex; gap: var(--cds-gap-sm); justify-content: space-between; font-variant-numeric: tabular-nums; }
+#dash-root .ea-tip .sw { display: inline-block; width: .5rem; height: .5rem; border-radius: 2px; margin-right: 4px; }
+#dash-root .ea-legend { display: flex; align-items: center; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-sm); }
+#dash-root .ea-legend .bar { height: .5rem; width: 8rem; border-radius: 4px; }
+#dash-root .ea-bars { min-height: 10rem; }
+#dash-root .ea-bars .row { display: grid; grid-template-columns: minmax(0, 13rem) 1fr 2.5rem; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); padding: 3px 0; cursor: pointer; }
+#dash-root .ea-bars .row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#dash-root .ea-bars .row .b { height: .75rem; border-radius: 4px; min-width: 2px; }
+#dash-root .ea-bars .row .c { text-align: right; font-variant-numeric: tabular-nums; }
+#dash-root .ea-bars .row.dim { opacity: .4; }
+#dash-root .ea-bars .row:hover .n { text-decoration: underline; }
+#dash-root .ea-tablewrap { max-height: 38rem; overflow: auto; }
+#dash-root .ea-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+#dash-root .ea-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); z-index: 1; white-space: nowrap; }
+#dash-root .ea-table th button { font: inherit; font-weight: var(--cds-font-weight-medium); color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+#dash-root .ea-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+#dash-root .ea-table tbody tr { cursor: pointer; }
+#dash-root .ea-table tbody tr:hover td { background: var(--color-bg); }
+#dash-root .ea-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-width: 16rem; }
+#dash-root .ea-table tr.open .ea-desc { -webkit-line-clamp: unset; display: block; }
+#dash-root .ea-table .ea-src { min-width: 9rem; color: var(--color-fg-muted); }
+#dash-root .ea-table .ea-tags { min-width: 10rem; }
+#dash-root .ea-count { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+@media (max-width: 40rem) { #dash-root .ea-hide-narrow { display: none; } #dash-root .ea-bars .row { grid-template-columns: minmax(0, 8rem) 1fr 2rem; } }
+#dash-root [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+#dash-root .ea-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: 6rem; }
+#dash-root .ea-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+</head>
+<body>
+<div id="dash-root">
+<script>
+// Minimal stand-in for the Claude dashboard runtime: loads data/actions.json and provides dash.data / onData / params.
+(() => {
+  const defaults = { q: null, cat: null, sub: null, type: null, status: null, state: null };
+  let params = { ...defaults };
+  let ds = { status: 'loading', data: [] };
+  const cbs = [];
+  const run = () => cbs.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
+  window.dash = {
+    colors: ['#d97757', '#6a9bcc', '#788c5d', '#b8860b', '#9b6bb3', '#4a9b9b', '#c46686', '#8a8a8a'],
+    data: () => ds,
+    onData: (fn) => { cbs.push(fn); fn(); },
+    params: () => ({ ...params }),
+    setParams: (o) => { params = { ...params, ...o }; run(); },
+    resetParams: () => { params = { ...defaults }; run(); },
+    setLink: () => {},
+    _run: run,
+  };
+  fetch('data/actions.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then((rows) => { ds = { status: 'ok', data: rows }; run(); })
+    .catch((e) => { console.error(e); ds = { status: 'error', data: [], message: String(e) }; run(); });
+  let w = 0;
+  new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (nw !== w) { w = nw; run(); } }).observe(document.documentElement);
+})();
+</script>
+
+
+<div class="ea">
+  <div class="ea-head" id="top">
+    <h1>50 States of Energy Affordability: September 2026 actions</h1>
+    <p class="ea-take dash-skeleton" data-source="actions">—</p>
+  </div>
+
+  <div class="ea-filters" id="filters">
+    <input class="ea-q" type="search" placeholder="Search descriptions, dockets, bills…" aria-label="Search">
+    <select class="ea-cat" aria-label="Category"></select>
+    <select class="ea-sub" aria-label="Sub-topic"></select>
+    <select class="ea-type" aria-label="Action type"></select>
+    <select class="ea-status" aria-label="Bill status"></select>
+    <button class="ea-btn ea-chip ea-state-chip" hidden></button>
+    <button class="ea-btn ea-reset">Reset filters</button>
+  </div>
+
+  <div class="ea-kpis" id="kpis" data-source="actions">
+    <div class="ea-card ea-kpi"><div class="lbl">Actions</div><div class="val dash-skeleton k-actions">—</div></div>
+    <div class="ea-card ea-kpi"><div class="lbl">Jurisdictions with actions</div><div class="val dash-skeleton k-states">—</div></div>
+    <div class="ea-card ea-kpi"><div class="lbl">Legislative actions</div><div class="val dash-skeleton k-leg">—</div></div>
+    <div class="ea-card ea-kpi"><div class="lbl">Bills enacted</div><div class="val dash-skeleton k-enacted">—</div></div>
+    <div class="ea-card ea-kpi"><div class="lbl">Large-load cost shift actions</div><div class="val dash-skeleton k-large">—</div></div>
+  </div>
+
+  <div class="ea-card" id="map-card">
+    <h2>Actions by state</h2>
+    <p class="ea-note">Number of actions matching the filters. Hover a state for its category breakdown; click it to filter everything below.</p>
+    <div class="ea-map ea-main-map dash-skeleton" data-source="actions"></div>
+    <div class="ea-legend"><span>Fewer</span><span class="bar ea-ramp"></span><span>More</span><span class="ea-legend-max"></span></div>
+    <div class="ea-tip" hidden></div>
+  </div>
+
+  <div class="ea-card" id="category-maps">
+    <h2>Category maps</h2>
+    <p class="ea-note">One map per category, using every filter except category. A multi-category action counts in each of its categories. Click a map to filter by that category.</p>
+    <div class="ea-smalls" data-source="actions"></div>
+    <div class="ea-tip" hidden></div>
+  </div>
+
+  <div class="ea-grid">
+    <div class="ea-card" id="by-category">
+      <h2>Actions by category</h2>
+      <p class="ea-note">Counts use every filter except category; click a bar to filter.</p>
+      <div class="ea-bars ea-catbars dash-skeleton" data-source="actions"></div>
+    </div>
+    <div class="ea-card" id="by-subtopic">
+      <h2>Top sub-topics</h2>
+      <p class="ea-note">The 15 most common sub-topics, using every filter except sub-topic; click a bar to filter.</p>
+      <div class="ea-bars ea-subbars dash-skeleton" data-source="actions"></div>
+    </div>
+  </div>
+
+  <div class="ea-card" id="database">
+    <h2>Action database</h2>
+    <p class="ea-note"><span class="ea-count"></span> Click a row to expand its full description; click a column heading to sort.</p>
+    <div class="ea-tablewrap">
+      <table class="ea-table" data-source="actions" data-row-key="id">
+        <thead><tr>
+          <th data-field="state_name"><button data-sort="state_name">State</button></th>
+          <th data-field="categories"><button data-sort="categories">Categories</button></th>
+          <th data-field="subtopics" class="ea-hide-narrow"><button data-sort="subtopics">Sub-topics</button></th>
+          <th data-field="action_type"><button data-sort="action_type">Type</button></th>
+          <th data-field="bill_status" class="ea-hide-narrow"><button data-sort="bill_status">Bill status</button></th>
+          <th data-field="description">Description</th>
+          <th data-field="sources" class="ea-hide-narrow">Sources</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+<p class="ea-foot">Data: DSIRE Insight, <em>50 States of Energy Affordability</em>, September 2026 actions. Action type and bill status are derived from each action's sources.</p></div>
+
+<script>
+(() => {
+  const root = document.querySelector('#dash-root .ea');
+  const $ = (s) => root.querySelector(s);
+  const fmt = d3.format(',');
+  const CATS = ['Customer Cost Allocation', 'Utility Oversight and Cost Recovery', 'Customer Cost-Saving Programs', 'Planning and Procurement', 'Utility Business Model', 'Studies and Investigations'];
+  const catColor = (c) => dash.colors[Math.max(0, CATS.indexOf(c)) % dash.colors.length];
+  const TILES = {AK:[0,0],ME:[0,11],WI:[1,6],VT:[1,10],NH:[1,11],WA:[2,1],ID:[2,2],MT:[2,3],ND:[2,4],MN:[2,5],IL:[2,6],MI:[2,7],NY:[2,9],MA:[2,10],
+    OR:[3,1],NV:[3,2],WY:[3,3],SD:[3,4],IA:[3,5],IN:[3,6],OH:[3,7],PA:[3,8],NJ:[3,9],CT:[3,10],RI:[3,11],CA:[4,1],UT:[4,2],CO:[4,3],NE:[4,4],MO:[4,5],KY:[4,6],WV:[4,7],VA:[4,8],MD:[4,9],DE:[4,10],
+    AZ:[5,2],NM:[5,3],KS:[5,4],AR:[5,5],TN:[5,6],NC:[5,7],SC:[5,8],DC:[5,9],OK:[6,4],LA:[6,5],MS:[6,6],AL:[6,7],GA:[6,8],HI:[7,0],TX:[7,4],FL:[7,9],PR:[7,11]};
+  const split = (s) => (s || '').split(';').map((x) => x.trim()).filter(Boolean);
+  const KEYS = ['q', 'cat', 'sub', 'type', 'status', 'state'];
+
+  let sortKey = 'state_name', sortDir = 1;
+  const opened = new Set();
+
+  const clean = (rows) => rows.map((r) => ({...r, state: String(r.state).trim(), _cats: split(r.categories), _subs: split(r.subtopics),
+    _text: [r.state_name, r.state, r.categories, r.subtopics, r.description, r.sources, r.action_type, r.bill_status].join(' ').toLowerCase()}));
+
+  const matches = (r, p, except) => {
+    if (except !== 'q' && p.q && !r._text.includes(String(p.q).toLowerCase())) return false;
+    if (except !== 'cat' && p.cat && !r._cats.includes(p.cat)) return false;
+    if (except !== 'sub' && p.sub && !r._subs.includes(p.sub)) return false;
+    if (except !== 'type' && p.type && r.action_type !== p.type) return false;
+    if (except !== 'status' && p.status && r.bill_status !== p.status) return false;
+    if (except !== 'state' && p.state && r.state !== p.state) return false;
+    return true;
+  };
+
+  // ---------- controls
+  const sel = { cat: $('.ea-cat'), sub: $('.ea-sub'), type: $('.ea-type'), status: $('.ea-status') };
+  const allLabel = { cat: 'All categories', sub: 'All sub-topics', type: 'All action types', status: 'Any bill status' };
+  Object.entries(sel).forEach(([k, el]) => el.addEventListener('change', () => dash.setParams({ [k]: el.value || null })));
+  const q = $('.ea-q');
+  let qTimer;
+  q.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => dash.setParams({ q: q.value.trim() || null }), 200); });
+  $('.ea-reset').addEventListener('click', () => { dash.resetParams(); dash.setParams(Object.fromEntries(KEYS.map((k) => [k, null]))); q.value = ''; });
+  $('.ea-state-chip').addEventListener('click', () => dash.setParams({ state: null }));
+  const fillSelect = (k, values) => {
+    const el = sel[k], cur = dash.params()[k] ?? '';
+    el.replaceChildren(new Option(allLabel[k], ''), ...values.map((v) => new Option(v, v)));
+    el.value = values.includes(cur) ? cur : '';
+  };
+
+  // ---------- tooltip
+  const showTip = (card, event, head, lines) => {
+    const tip = card.querySelector('.ea-tip');
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 'h'; h.textContent = head; tip.append(h);
+    lines.forEach(([label, val, color]) => {
+      const r = document.createElement('div'); r.className = 'r';
+      const a = document.createElement('span');
+      if (color) { const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = color; a.append(sw); }
+      a.append(document.createTextNode(label));
+      const b = document.createElement('span'); b.textContent = val;
+      r.append(a, b); tip.append(r);
+    });
+    tip.hidden = false;
+    const box = card.getBoundingClientRect();
+    let x = event.clientX - box.left + 12, y = event.clientY - box.top + 12;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    if (x + tw > box.width - 4) x = event.clientX - box.left - tw - 12;
+    if (y + th > box.height - 4) y = event.clientY - box.top - th - 12;
+    tip.style.left = Math.max(4, x) + 'px'; tip.style.top = Math.max(4, y) + 'px';
+  };
+  const hideTip = (card) => { card.querySelector('.ea-tip').hidden = true; };
+
+  // ---------- tile map
+  const drawTiles = (el, counts, opts) => {
+    const w = el.clientWidth || 600;
+    const gap = opts.small ? 2 : 4;
+    const cell = Math.min((w - gap * 11) / 12, opts.small ? 26 : 64);
+    const W = cell * 12 + gap * 11, H = cell * 8 + gap * 7;
+    const max = opts.max ?? (d3.max(Object.values(counts)) || 1);
+    const op = d3.scaleSqrt([0, max], [0.15, 1]);
+    el.replaceChildren();
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('max-width', W + 'px').style('display', 'block');
+    const g = svg.selectAll('g').data(Object.entries(TILES)).join('g')
+      .attr('transform', ([, [r, c]]) => `translate(${c * (cell + gap)},${r * (cell + gap)})`);
+    g.append('rect').attr('width', cell).attr('height', cell).attr('rx', opts.small ? 2 : 4)
+      .style('fill', ([s]) => counts[s] ? opts.color : 'var(--color-bg)')
+      .style('fill-opacity', ([s]) => counts[s] ? op(counts[s]) : 1)
+      .style('stroke', ([s]) => opts.picked === s ? 'var(--color-fg)' : 'var(--color-border-line)')
+      .attr('stroke-width', ([s]) => opts.picked === s ? 2.5 : 1)
+      .style('cursor', opts.onClick ? 'pointer' : null);
+    if (!opts.small) {
+      g.append('text').attr('x', cell / 2).attr('y', cell / 2 - (cell > 40 ? 5 : 0)).attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+        .attr('font-size', Math.max(8, cell * 0.24)).attr('font-weight', 500)
+        .style('fill', ([s]) => counts[s] && op(counts[s]) > 0.6 ? 'var(--color-bg)' : 'var(--color-fg)').text(([s]) => s);
+      if (cell > 40) g.append('text').attr('x', cell / 2).attr('y', cell / 2 + 11).attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+        .attr('font-size', Math.max(8, cell * 0.2)).style('font-variant-numeric', 'tabular-nums')
+        .style('fill', ([s]) => counts[s] && op(counts[s]) > 0.6 ? 'var(--color-bg)' : 'var(--color-fg-muted)').text(([s]) => counts[s] ? fmt(counts[s]) : '');
+    }
+    if (opts.onHover) g.on('mousemove', (e, [s]) => opts.onHover(e, s)).on('mouseleave', () => opts.onLeave());
+    if (opts.onClick) g.on('click', (e, [s]) => { e.stopPropagation(); opts.onClick(s); });
+    return max;
+  };
+
+  // ---------- bars
+  const drawBars = (el, items, active, colorOf, onPick) => {
+    el.replaceChildren();
+    const max = d3.max(items, (d) => d[1]) || 1;
+    items.forEach(([name, n]) => {
+      const row = document.createElement('div'); row.className = 'row' + (active && active !== name ? ' dim' : '');
+      const a = document.createElement('span'); a.className = 'n'; a.textContent = name; a.title = name;
+      const wrap = document.createElement('span');
+      const b = document.createElement('div'); b.className = 'b'; b.style.width = (n / max * 100) + '%'; b.style.background = colorOf(name);
+      wrap.append(b);
+      const c = document.createElement('span'); c.className = 'c'; c.textContent = fmt(n);
+      row.append(a, wrap, c);
+      row.addEventListener('click', () => onPick(active === name ? null : name));
+      el.append(row);
+    });
+    if (!items.length) { const p = document.createElement('div'); p.className = 'ea-note'; p.textContent = 'No actions match these filters.'; el.append(p); }
+  };
+
+  // ---------- table sorting / expanding
+  root.querySelectorAll('.ea-table th button').forEach((b) => b.addEventListener('click', () => {
+    const k = b.dataset.sort; if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = 1; } render();
+  }));
+  $('.ea-table tbody').addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-key]'); if (!tr) return;
+    const k = tr.dataset.key; if (opened.has(k)) opened.delete(k); else opened.add(k); tr.classList.toggle('open');
+  });
+
+  // ---------- main render
+  let last = null;
+  const render = () => {
+    const d = dash.data('actions');
+    const skel = root.querySelectorAll('.dash-skeleton');
+    if (d.status !== 'ok') {
+      if (d.status === 'error' || d.status === 'connect') {
+        skel.forEach((n) => n.classList.remove('dash-skeleton'));
+        root.querySelectorAll('.ea-main-map, .ea-catbars, .ea-subbars').forEach((n) => { n.replaceChildren(); n.className += ' ea-fail'; n.textContent = 'Failed to load'; });
+      }
+      return;
+    }
+    skel.forEach((n) => n.classList.remove('dash-skeleton'));
+    if (!last || last.src !== d.data) last = { src: d.data, rows: clean(d.data) };
+    const rows = last.rows;
+    const p = dash.params();
+
+    // controls
+    const subs = [...new Set(rows.flatMap((r) => r._subs))].sort();
+    fillSelect('cat', CATS.filter((c) => rows.some((r) => r._cats.includes(c))));
+    fillSelect('sub', subs);
+    fillSelect('type', ['Legislation', 'Regulatory proceeding', 'Executive & other'].filter((t) => rows.some((r) => r.action_type === t)));
+    fillSelect('status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed'].filter((t) => rows.some((r) => r.bill_status === t)));
+    if (q !== document.activeElement) q.value = p.q ?? '';
+    const chip = $('.ea-state-chip');
+    const stName = p.state ? (rows.find((r) => r.state === p.state) || {}).state_name || p.state : '';
+    chip.hidden = !p.state; chip.textContent = p.state ? stName + ' ×' : '';
+
+    const f = rows.filter((r) => matches(r, p));
+
+    // KPIs
+    const states = new Set(f.map((r) => r.state));
+    $('.k-actions').textContent = fmt(f.length);
+    $('.k-states').textContent = fmt(states.size);
+    $('.k-leg').textContent = fmt(f.filter((r) => r.action_type === 'Legislation').length);
+    $('.k-enacted').textContent = fmt(f.filter((r) => r.bill_status === 'Enacted').length);
+    $('.k-large').textContent = fmt(f.filter((r) => r._subs.includes('Cost Shift Prevention (Large Load)')).length);
+
+    // takeaway
+    const byState = d3.rollup(f, (v) => v.length, (r) => r.state);
+    const topState = d3.greatest(byState, ([, n]) => n);
+    const subCount = d3.rollup(f.flatMap((r) => r._subs), (v) => v.length, (s) => s);
+    const topSub = d3.greatest(subCount, ([, n]) => n);
+    const filtered = KEYS.some((k) => p[k]);
+    $('.ea-take').textContent = !f.length ? 'No actions match these filters.' :
+      `${filtered ? 'Matching the filters: ' : ''}${fmt(f.length)} action${f.length === 1 ? '' : 's'} across ${fmt(states.size)} jurisdiction${states.size === 1 ? '' : 's'}. ` +
+      (states.size > 1 ? `${rows.find((r) => r.state === topState[0]).state_name} has the most (${fmt(topState[1])}), and ` : '') +
+      (topSub ? `the most common sub-topic is ${topSub[0]} (${fmt(topSub[1])}).` : '');
+
+    // main map (all filters except state)
+    const fm = rows.filter((r) => matches(r, p, 'state'));
+    const mapCounts = Object.fromEntries(d3.rollup(fm, (v) => v.length, (r) => r.state));
+    const mapCard = $('#map-card');
+    const max = drawTiles($('.ea-main-map'), mapCounts, {
+      color: dash.colors[0], picked: p.state,
+      onClick: (s) => { if (mapCounts[s] || p.state === s) dash.setParams({ state: p.state === s ? null : s }); },
+      onHover: (e, s) => {
+        const these = fm.filter((r) => r.state === s);
+        const name = these[0]?.state_name || s;
+        const cc = d3.rollup(these.flatMap((r) => r._cats), (v) => v.length, (c) => c);
+        showTip(mapCard, e, `${name}: ${fmt(these.length)} action${these.length === 1 ? '' : 's'}`,
+          CATS.filter((c) => cc.get(c)).map((c) => [c, fmt(cc.get(c)), catColor(c)]));
+      },
+      onLeave: () => hideTip(mapCard),
+    });
+    $('.ea-ramp').style.background = `linear-gradient(90deg, color-mix(in srgb, ${dash.colors[0]} 15%, transparent), ${dash.colors[0]})`;
+    $('.ea-legend-max').textContent = `(max ${fmt(max)} per state)`;
+
+    // category small multiples (all filters except cat)
+    const fc = rows.filter((r) => matches(r, p, 'cat'));
+    const smalls = root.querySelector('.ea-smalls');
+    smalls.replaceChildren();
+    const smCard = $('#category-maps');
+    const catMax = d3.max(CATS, (c) => d3.max(d3.rollup(fc.filter((r) => r._cats.includes(c)), (v) => v.length, (r) => r.state).values())) || 1;
+    CATS.forEach((c) => {
+      const these = fc.filter((r) => r._cats.includes(c));
+      const counts = Object.fromEntries(d3.rollup(these, (v) => v.length, (r) => r.state));
+      const box = document.createElement('div'); box.className = 'ea-small' + (p.cat === c ? ' on' : '');
+      const t = document.createElement('div'); t.className = 't';
+      const t1 = document.createElement('span'); t1.textContent = c;
+      const t2 = document.createElement('span'); t2.textContent = `${fmt(these.length)} · ${fmt(Object.keys(counts).length)} states`;
+      t.append(t1, t2);
+      const m = document.createElement('div'); m.className = 'ea-map'; m.style.minHeight = '0';
+      box.append(t, m); smalls.append(box);
+      box.addEventListener('click', () => dash.setParams({ cat: p.cat === c ? null : c }));
+      drawTiles(m, counts, { small: true, color: catColor(c), max: catMax, picked: p.state,
+        onHover: (e, s) => { const n = counts[s] || 0; const nm = these.find((r) => r.state === s)?.state_name || s;
+          showTip(smCard, e, nm, [[c, fmt(n), catColor(c)]]); },
+        onLeave: () => hideTip(smCard) });
+    });
+
+    // bars
+    const fcCounts = d3.rollup(fc.flatMap((r) => r._cats), (v) => v.length, (c) => c);
+    drawBars($('.ea-catbars'), CATS.map((c) => [c, fcCounts.get(c) || 0]).filter((x) => x[1]).sort((a, b) => b[1] - a[1]), p.cat, catColor,
+      (v) => dash.setParams({ cat: v }));
+    const fs = rows.filter((r) => matches(r, p, 'sub'));
+    const sc = d3.rollup(fs.flatMap((r) => r._subs), (v) => v.length, (s) => s);
+    let subItems = [...sc].sort((a, b) => b[1] - a[1] || d3.ascending(a[0], b[0])).slice(0, 15);
+    if (p.sub && !subItems.some((x) => x[0] === p.sub) && sc.get(p.sub)) subItems.push([p.sub, sc.get(p.sub)]);
+    drawBars($('.ea-subbars'), subItems, p.sub, () => dash.colors[1], (v) => dash.setParams({ sub: v }));
+
+    // table
+    root.querySelectorAll('.ea-table th button').forEach((b) => {
+      const th = b.parentElement; th.setAttribute('aria-sort', b.dataset.sort === sortKey ? (sortDir > 0 ? 'ascending' : 'descending') : 'none');
+    });
+    const sorted = f.slice().sort((a, b) => sortDir * d3.ascending(a[sortKey] || '\uffff', b[sortKey] || '\uffff') || d3.ascending(a.id, b.id));
+    const tb = $('.ea-table tbody');
+    tb.replaceChildren(...sorted.map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.id; if (opened.has(r.id)) tr.className = 'open';
+      const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; c.textContent = text; return c; };
+      const desc = document.createElement('td'); const dv = document.createElement('div'); dv.className = 'ea-desc'; dv.textContent = r.description; desc.append(dv);
+      tr.append(td(r.state_name), td(r.categories, 'ea-tags'), td(r.subtopics, 'ea-tags ea-hide-narrow'), td(r.action_type), td(r.bill_status, 'ea-hide-narrow'), desc, td(r.sources, 'ea-src ea-hide-narrow'));
+      return tr;
+    }));
+    $('.ea-count').textContent = `Showing ${fmt(f.length)} of ${fmt(rows.length)} actions.`;
+  };
+
+  dash.onData(render);
+})();
+</script>
+
+</div>
+</body>
+</html>
