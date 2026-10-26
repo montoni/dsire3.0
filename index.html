@@ -306,6 +306,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     const k = b.dataset.sort; if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = 1; } render();
   }));
   $('.ea-table tbody').addEventListener('click', (e) => {
+  if (e.target.closest('a')) return;
     const tr = e.target.closest('tr[data-key]'); if (!tr) return;
     const k = tr.dataset.key; if (opened.has(k)) opened.delete(k); else opened.add(k); tr.classList.toggle('open');
   });
@@ -416,12 +417,24 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       const th = b.parentElement; th.setAttribute('aria-sort', b.dataset.sort === sortKey ? (sortDir > 0 ? 'ascending' : 'descending') : 'none');
     });
     const sorted = f.slice().sort((a, b) => sortDir * d3.ascending(a[sortKey] || '\uffff', b[sortKey] || '\uffff') || d3.ascending(a.id, b.id));
+    const srcCell = (r) => {
+  const c = document.createElement('td'); c.className = 'ea-src ea-hide-narrow';
+  (r.source_links || []).forEach((l, i) => {
+    if (i) c.append('; ');
+    if (l.url) {
+      const a = document.createElement('a');
+      a.href = l.url; a.textContent = l.text; a.target = '_blank'; a.rel = 'noopener';
+      c.append(a);
+    } else c.append(l.text);
+  });
+  return c;
+};
     const tb = $('.ea-table tbody');
     tb.replaceChildren(...sorted.map((r) => {
       const tr = document.createElement('tr'); tr.dataset.key = r.id; if (opened.has(r.id)) tr.className = 'open';
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; c.textContent = text; return c; };
       const desc = document.createElement('td'); const dv = document.createElement('div'); dv.className = 'ea-desc'; dv.textContent = r.description; desc.append(dv);
-      tr.append(td(r.state_name), td(r.categories, 'ea-tags'), td(r.subtopics, 'ea-tags ea-hide-narrow'), td(r.action_type), td(r.bill_status, 'ea-hide-narrow'), desc, td(r.sources, 'ea-src ea-hide-narrow'));
+      tr.append(td(r.state_name), td(r.categories, 'ea-tags'), td(r.subtopics, 'ea-tags ea-hide-narrow'), td(r.action_type), td(r.bill_status, 'ea-hide-narrow'), desc, srcCell(r));
       return tr;
     }));
     $('.ea-count').textContent = `Showing ${fmt(f.length)} of ${fmt(rows.length)} actions.`;
