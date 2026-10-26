@@ -28,5 +28,5 @@ for i,r in df.iterrows():
         action_type=typ,bill_status=st[codes[0]] if codes else '',description=re.sub(r'\s{2,}',' ',str(r[3]).strip()),sources='; '.join(srcs)))
 print(Counter(x['action_type'] for x in rows)); print(Counter(x['bill_status'] for x in rows))
 
-json.dump(rows,open(out,'w'),ensure_ascii=False)
+json.dump(rows,open(out,'w',encoding='utf-8'),ensure_ascii=False)
 print(f'Wrote {len(rows)} actions to {out}')
