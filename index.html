@@ -147,7 +147,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 
   <div class="ea-card" id="category-maps">
     <h2>Category maps</h2>
-    <p class="ea-note">One map per category, using every filter except category. A multi-category action counts in each of its categories. Click a map to filter by that category.</p>
+    <p class="ea-note">One map per category, using every filter except category. An action counts in each category it is tagged with; when a sub-topic is selected, only where that sub-topic belongs to the category. Click a map to filter by that category.</p>
     <div class="ea-smalls" data-source="actions"></div>
     <div class="ea-tip" hidden></div>
   </div>
@@ -190,7 +190,36 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   const root = document.querySelector('#dash-root .ea');
   const $ = (s) => root.querySelector(s);
   const fmt = d3.format(',');
-  const CATS = ['Customer Cost Allocation', 'Utility Oversight and Cost Recovery', 'Customer Cost-Saving Programs', 'Planning and Procurement', 'Utility Business Model', 'Studies and Investigations'];
+    // ===== Category -> sub-topic mapping (edit here) =====
+  // A sub-topic counts toward a category only if it is listed under that category here
+  // AND the action is tagged with that category. STUDIES accepts every sub-topic.
+  const CATEGORY_SUBTOPICS = {
+    'Utility Business Model': ['CapEx/OpEx Equalization', 'Earnings Sharing Mechanisms', 'Formula Rates', 'Multi-Year Rate Plans',
+      'Performance-Based Regulation', 'Performance Incentive Mechanisms', 'Return on Equity Rules', 'Revenue Adjustment Mechanisms',
+      'Revenue Decoupling', 'Shared Savings Mechanisms', 'Utility Structure', 'Fuel Cost Risk Sharing', 'Least Cost Resource Testing'],
+    'Utility Oversight and Cost Recovery': ['Audits', 'Compliance Costs', 'Consumer Representation', 'Cost-Effectiveness Standards',
+      'Cost Recovery', 'Cost Trackers', 'Disconnection Reporting', 'Executive Compensation', 'Monitoring', 'Program Reviews',
+      'Rate Freezes', 'Rate Increase Withdrawal', 'Ratemaking', 'Regulatory Decision-Making', 'Return on Equity Rates',
+      'Transparency', 'Retail choice protection',
+      'Metrics', 'Liability'], // added
+    'Planning and Procurement': ['Advanced Transmission Technologies', 'Competitive Procurement', 'Grid Utilization',
+      'Innovative Financing', 'Joint Procurement', 'Non-Wires Alternatives', 'Planning Rules', 'Procurement Methods',
+      'Securitization', 'Surplus Interconnection', 'Wholesale Capacity Market Rules', 'Repowering', 'Retirements',
+      'Earnings Test', 'Streamlining Interconnection',
+      'Procurement Rules', 'Streamlining Permitting', 'Construction Oversight'], // added
+    'Customer Cost Allocation': ['Arrearage Management', 'Bill Assistance', 'Cost Shift Prevention',
+      'Cost Shift Prevention (Large Load)', 'Disconnection Policies', 'Low-Income Discount Rates', 'Payment Plans',
+      'Rate Design', 'Tax Exemption', 'Residential Fixed Charges - policy',
+      'Rate increase effective dates outside summer/winter', 'Late fee elimination/investigation'],
+    'Customer Cost-Saving Programs': ['Education', 'Financing', 'LMI Community Solar', 'LMI DER Programs', 'LMI Incentives',
+      'Tariffed On-Bill Financing', 'Weatherization'],
+  };
+  const STUDIES = 'Studies and Investigations';
+  // =====================================================
+  const CATS = ['Customer Cost Allocation', 'Utility Oversight and Cost Recovery', 'Customer Cost-Saving Programs', 'Planning and Procurement', 'Utility Business Model', STUDIES];
+  const SUBSETS = Object.fromEntries(Object.entries(CATEGORY_SUBTOPICS).map(([c, v]) => [c, new Set(v.map((x) => x.toLowerCase()))]));
+  // sub-topics of action r that count toward category c
+  const subsFor = (r, c) => !r._cats.includes(c) ? [] : c === STUDIES ? r._subs : r._subs.filter((s) => SUBSETS[c]?.has(s.toLowerCase()));
   const catColor = (c) => dash.colors[Math.max(0, CATS.indexOf(c)) % dash.colors.length];
   const TILES = {AK:[0,0],ME:[0,11],WI:[1,6],VT:[1,10],NH:[1,11],WA:[2,1],ID:[2,2],MT:[2,3],ND:[2,4],MN:[2,5],IL:[2,6],MI:[2,7],NY:[2,9],MA:[2,10],
     OR:[3,1],NV:[3,2],WY:[3,3],SD:[3,4],IA:[3,5],IN:[3,6],OH:[3,7],PA:[3,8],NJ:[3,9],CT:[3,10],RI:[3,11],CA:[4,1],UT:[4,2],CO:[4,3],NE:[4,4],MO:[4,5],KY:[4,6],WV:[4,7],VA:[4,8],MD:[4,9],DE:[4,10],
@@ -207,7 +236,10 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   const matches = (r, p, except) => {
     if (except !== 'q' && p.q && !r._text.includes(String(p.q).toLowerCase())) return false;
     if (except !== 'cat' && p.cat && !r._cats.includes(p.cat)) return false;
-    if (except !== 'sub' && p.sub && !r._subs.includes(p.sub)) return false;
+    if (except !== 'sub' && p.sub) {
+      if (except !== 'cat' && p.cat) { if (!subsFor(r, p.cat).includes(p.sub)) return false; }
+      else if (!r._subs.includes(p.sub)) return false;
+    }
     if (except !== 'type' && p.type && r.action_type !== p.type) return false;
     if (except !== 'status' && p.status && r.bill_status !== p.status) return false;
     if (except !== 'state' && p.state && r.state !== p.state) return false;
@@ -331,7 +363,9 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     // controls
     const subs = [...new Set(rows.flatMap((r) => r._subs))].sort();
     fillSelect('cat', CATS.filter((c) => rows.some((r) => r._cats.includes(c))));
-    fillSelect('sub', subs);
+    const subOpts = p.cat ? [...new Set(rows.flatMap((r) => subsFor(r, p.cat)))].sort() : subs;
+    if (p.sub && !subOpts.includes(p.sub)) { dash.setParams({ sub: null }); return; }
+    fillSelect('sub', subOpts);
     fillSelect('type', ['Legislation', 'Regulatory proceeding', 'Executive & other'].filter((t) => rows.some((r) => r.action_type === t)));
     fillSelect('status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed'].filter((t) => rows.some((r) => r.bill_status === t)));
     if (q !== document.activeElement) q.value = p.q ?? '';
@@ -352,7 +386,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     // takeaway
     const byState = d3.rollup(f, (v) => v.length, (r) => r.state);
     const topState = d3.greatest(byState, ([, n]) => n);
-    const subCount = d3.rollup(f.flatMap((r) => r._subs), (v) => v.length, (s) => s);
+    const subCount = d3.rollup(f.flatMap((r) => p.cat ? subsFor(r, p.cat) : r._subs), (v) => v.length, (s) => s);
     const topSub = d3.greatest(subCount, ([, n]) => n);
     const filtered = KEYS.some((k) => p[k]);
     $('.ea-take').textContent = !f.length ? 'No actions match these filters.' :
@@ -370,7 +404,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       onHover: (e, s) => {
         const these = fm.filter((r) => r.state === s);
         const name = these[0]?.state_name || s;
-        const cc = d3.rollup(these.flatMap((r) => r._cats), (v) => v.length, (c) => c);
+        const cc = new Map(CATS.map((c) => [c, these.filter((r) => matches(r, { ...p, cat: c, state: null })).length]));
         showTip(mapCard, e, `${name}: ${fmt(these.length)} action${these.length === 1 ? '' : 's'}`,
           CATS.filter((c) => cc.get(c)).map((c) => [c, fmt(cc.get(c)), catColor(c)]));
       },
@@ -384,9 +418,10 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     const smalls = root.querySelector('.ea-smalls');
     smalls.replaceChildren();
     const smCard = $('#category-maps');
-    const catMax = d3.max(CATS, (c) => d3.max(d3.rollup(fc.filter((r) => r._cats.includes(c)), (v) => v.length, (r) => r.state).values())) || 1;
+    const inCat = Object.fromEntries(CATS.map((c) => [c, fc.filter((r) => matches(r, { ...p, cat: c }))]));
+    const catMax = d3.max(CATS, (c) => d3.max(d3.rollup(inCat[c], (v) => v.length, (r) => r.state).values())) || 1;
     CATS.forEach((c) => {
-      const these = fc.filter((r) => r._cats.includes(c));
+      const these = inCat[c];
       const counts = Object.fromEntries(d3.rollup(these, (v) => v.length, (r) => r.state));
       const box = document.createElement('div'); box.className = 'ea-small' + (p.cat === c ? ' on' : '');
       const t = document.createElement('div'); t.className = 't';
@@ -403,11 +438,11 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     });
 
     // bars
-    const fcCounts = d3.rollup(fc.flatMap((r) => r._cats), (v) => v.length, (c) => c);
+    const fcCounts = new Map(CATS.map((c) => [c, inCat[c].length]));
     drawBars($('.ea-catbars'), CATS.map((c) => [c, fcCounts.get(c) || 0]).filter((x) => x[1]).sort((a, b) => b[1] - a[1]), p.cat, catColor,
       (v) => dash.setParams({ cat: v }));
     const fs = rows.filter((r) => matches(r, p, 'sub'));
-    const sc = d3.rollup(fs.flatMap((r) => r._subs), (v) => v.length, (s) => s);
+    const sc = d3.rollup(fs.flatMap((r) => p.cat ? subsFor(r, p.cat) : r._subs), (v) => v.length, (s) => s);
     let subItems = [...sc].sort((a, b) => b[1] - a[1] || d3.ascending(a[0], b[0])).slice(0, 15);
     if (p.sub && !subItems.some((x) => x[0] === p.sub) && sc.get(p.sub)) subItems.push([p.sub, sc.get(p.sub)]);
     drawBars($('.ea-subbars'), subItems, p.sub, () => dash.colors[1], (v) => dash.setParams({ sub: v }));
