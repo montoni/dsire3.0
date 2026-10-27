@@ -1,13 +1,13 @@
-"""Convert a DSIRE Insight "50 States of Energy Affordability" actions workbook into data/actions.json.
+"""Convert a DSIRE Insight "50 States of Energy Affordability" actions workbook into data/data/actions.json.
  
-Usage: python scripts/build_data.py path/to/workbook.xlsx [data/actions.json]
+Usage: python scripts/build_data.py path/to/workbook.xlsx [data/data/actions.json]
 Requires openpyxl.
 """
 import json, re, sys
 from openpyxl import load_workbook
  
 src = sys.argv[1] if len(sys.argv) > 1 else 'workbook.xlsx'
-out = sys.argv[2] if len(sys.argv) > 2 else 'actions.json'
+out = sys.argv[2] if len(sys.argv) > 2 else 'data/actions.json'
  
 NAMES = {'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California','CO':'Colorado','CT':'Connecticut','DE':'Delaware','DC':'District of Columbia','FL':'Florida','GA':'Georgia','HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa','KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland','MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri','MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey','NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio','OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina','SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont','VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming','PR':'Puerto Rico'}
 STATUS = {'E':'Enacted','P1':'Passed one chamber','P2':'Passed both chambers','D':'Failed','V':'Vetoed'}
