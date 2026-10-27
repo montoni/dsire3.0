@@ -254,8 +254,16 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   let sortKey = 'state_name', sortDir = 1;
   const opened = new Set();
 
-  const clean = (rows) => rows.map((r) => ({...r, state: String(r.state).trim(), _cats: split(r.categories), _subs: split(r.subtopics),
-    _text: [r.state_name, r.state, r.categories, r.subtopics, r.description, r.sources, r.action_type, r.bill_status].join(' ').toLowerCase()}));
+    // One record per (row, category): a row tagged with three categories becomes three actions.
+  const clean = (rows) => rows.flatMap((r) => {
+    const cats = split(r.categories), subs = split(r.subtopics);
+    const one = (c, mine, id) => ({ ...r, id, _row: r.id, state: String(r.state).trim(),
+      categories: c, subtopics: mine.join('; '), _cats: c ? [c] : [], _subs: mine,
+      _text: [r.state_name, r.state, c, mine.join(' '), r.description, r.sources, r.action_type, r.bill_status].join(' ').toLowerCase() });
+    if (!cats.length) return [one('', subs, r.id)];
+    return cats.map((c, i) => one(c, c === STUDIES ? subs : subs.filter((s) => SUBSETS[c]?.has(s.toLowerCase())),
+      cats.length > 1 ? `${r.id}-${i + 1}` : r.id));
+  });
 
   const matches = (r, p, except) => {
     if (except !== 'q' && p.q && !r._text.includes(String(p.q).toLowerCase())) return false;
