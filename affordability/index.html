@@ -152,7 +152,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     <div class="ea-card ea-kpi"><div class="lbl">Actions</div><div class="val dash-skeleton k-actions">—</div></div>
     <div class="ea-card ea-kpi"><div class="lbl">Jurisdictions with actions</div><div class="val dash-skeleton k-states">—</div></div>
     <div class="ea-card ea-kpi"><div class="lbl">Legislative actions</div><div class="val dash-skeleton k-leg">—</div></div>
-    <div class="ea-card ea-kpi"><div class="lbl">Bills enacted</div><div class="val dash-skeleton k-enacted">—</div></div>
+    <div class="ea-card ea-kpi"><div class="lbl">Regulatory actions</div><div class="val dash-skeleton k-reg">—</div></div>
+    <div class="ea-card ea-kpi"><div class="lbl">Executive and other actions</div><div class="val dash-skeleton k-exec">—</div></div>
   </div>
 
   <div class="ea-card" id="map-card">
@@ -405,7 +406,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     $('.k-actions').textContent = fmt(f.length);
     $('.k-states').textContent = fmt(states.size);
     $('.k-leg').textContent = fmt(f.filter((r) => r.action_type === 'Legislation').length);
-    $('.k-enacted').textContent = fmt(f.filter((r) => r.bill_status === 'Enacted').length);
+    $('.k-reg').textContent = fmt(f.filter((r) => r.action_type === 'Regulatory proceeding').length);
+    $('.k-exec').textContent = fmt(f.filter((r) => r.action_type === 'Executive & other').length);
     
     // takeaway
     const byState = d3.rollup(f, (v) => v.length, (r) => r.state);
