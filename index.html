@@ -153,7 +153,6 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     <div class="ea-card ea-kpi"><div class="lbl">Jurisdictions with actions</div><div class="val dash-skeleton k-states">—</div></div>
     <div class="ea-card ea-kpi"><div class="lbl">Legislative actions</div><div class="val dash-skeleton k-leg">—</div></div>
     <div class="ea-card ea-kpi"><div class="lbl">Bills enacted</div><div class="val dash-skeleton k-enacted">—</div></div>
-    <div class="ea-card ea-kpi"><div class="lbl">Large-load cost shift actions</div><div class="val dash-skeleton k-large">—</div></div>
   </div>
 
   <div class="ea-card" id="map-card">
@@ -407,8 +406,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     $('.k-states').textContent = fmt(states.size);
     $('.k-leg').textContent = fmt(f.filter((r) => r.action_type === 'Legislation').length);
     $('.k-enacted').textContent = fmt(f.filter((r) => r.bill_status === 'Enacted').length);
-    $('.k-large').textContent = fmt(f.filter((r) => r._subs.includes('Cost Shift Prevention (Large Load)')).length);
-
+    
     // takeaway
     const byState = d3.rollup(f, (v) => v.length, (r) => r.state);
     const topState = d3.greatest(byState, ([, n]) => n);
