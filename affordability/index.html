@@ -36,6 +36,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); max-width: 100%; }
 #dash-root .ea-filters input { min-width: 12rem; flex: 1 1 12rem; }
 #dash-root .ea-btn { cursor: pointer; }
+#dash-root .ea-state-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+#dash-root .ea-state-chips:empty { display: none; }
 #dash-root .ea-chip { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 #dash-root .ea-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-md); }
 #dash-root .ea-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); position: relative; min-width: 0; }
@@ -142,7 +144,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     <select class="ea-sub" aria-label="Sub-topic"></select>
     <select class="ea-type" aria-label="Action type"></select>
     <select class="ea-status" aria-label="Bill status"></select>
-    <button class="ea-btn ea-chip ea-state-chip" hidden></button>
+    <div class="ea-state-chip"></div>
     <button class="ea-btn ea-reset">Reset filters</button>
   </div>
   </aside>
@@ -158,7 +160,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 
   <div class="ea-card" id="map-card">
     <h2>Actions by state</h2>
-    <p class="ea-note">Number of actions matching the filters. Hover a state for its category breakdown; click it to filter everything below.</p>
+    <p class="ea-note">Number of actions matching the filters. Hover a state for its category breakdown; click up to four states to filter everything below.</p>
     <div class="ea-map ea-main-map dash-skeleton" data-source="actions"></div>
     <div class="ea-legend"><span>Fewer</span><span class="bar ea-ramp"></span><span>More</span><span class="ea-legend-max"></span></div>
     <div class="ea-tip" hidden></div>
@@ -274,7 +276,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     }
     if (except !== 'type' && p.type && r.action_type !== p.type) return false;
     if (except !== 'status' && p.status && r.bill_status !== p.status) return false;
-    if (except !== 'state' && p.state && r.state !== p.state) return false;
+    if (except !== 'state' && p.state?.length && !p.state.includes(r.state)) return false;
     return true;
   };
 
@@ -286,7 +288,13 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   let qTimer;
   q.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => dash.setParams({ q: q.value.trim() || null }), 200); });
   $('.ea-reset').addEventListener('click', () => { dash.resetParams(); dash.setParams(Object.fromEntries(KEYS.map((k) => [k, null]))); q.value = ''; });
-  $('.ea-state-chip').addEventListener('click', () => dash.setParams({ state: null }));
+  const MAX_STATES = 4;
+  const toggleState = (s) => {
+    const cur = dash.params().state || [];
+    let next = cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s];
+    if (next.length > MAX_STATES) next = next.slice(-MAX_STATES); // drop the oldest pick
+    dash.setParams({ state: next.length ? next : null });
+  };
   const fillSelect = (k, values) => {
     const el = sel[k], cur = dash.params()[k] ?? '';
     el.replaceChildren(new Option(allLabel[k], ''), ...values.map((v) => new Option(v, v)));
@@ -331,8 +339,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     g.append('rect').attr('width', cell).attr('height', cell).attr('rx', opts.small ? 2 : 4)
       .style('fill', ([s]) => counts[s] ? opts.color : 'var(--color-bg)')
       .style('fill-opacity', ([s]) => counts[s] ? op(counts[s]) : 1)
-      .style('stroke', ([s]) => opts.picked === s ? 'var(--color-fg)' : 'var(--color-border-line)')
-      .attr('stroke-width', ([s]) => opts.picked === s ? 2.5 : 1)
+      .style('stroke', ([s]) => opts.picked?.includes(s) ? 'var(--color-fg)' : 'var(--color-border-line)')
+      .attr('stroke-width', ([s]) => opts.picked?.includes(s) ? 2.5 : 1)
       .style('cursor', opts.onClick ? 'pointer' : null);
     if (!opts.small) {
       g.append('text').attr('x', cell / 2).attr('y', cell / 2 - (cell > 40 ? 5 : 0)).attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
@@ -403,9 +411,12 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     fillSelect('type', ['Legislation', 'Regulatory proceeding', 'Executive & other'].filter((t) => rows.some((r) => r.action_type === t)));
     fillSelect('status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed'].filter((t) => rows.some((r) => r.bill_status === t)));
     if (q !== document.activeElement) q.value = p.q ?? '';
-    const chip = $('.ea-state-chip');
-    const stName = p.state ? (rows.find((r) => r.state === p.state) || {}).state_name || p.state : '';
-    chip.hidden = !p.state; chip.textContent = p.state ? stName + ' ×' : '';
+    $('.ea-state-chips').replaceChildren(...(p.state || []).map((s) => {
+      const b = document.createElement('button'); b.className = 'ea-btn ea-chip';
+      b.textContent = ((rows.find((r) => r.state === s) || {}).state_name || s) + ' ×';
+      b.addEventListener('click', () => toggleState(s));
+      return b;
+    }));
 
     const f = rows.filter((r) => matches(r, p));
 
@@ -434,7 +445,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     const mapCard = $('#map-card');
     const max = drawTiles($('.ea-main-map'), mapCounts, {
       color: dash.colors[0], picked: p.state,
-      onClick: (s) => { if (mapCounts[s] || p.state === s) dash.setParams({ state: p.state === s ? null : s }); },
+      onClick: (s) => { if (mapCounts[s] || p.state?.includes(s)) toggleState(s); },
       onHover: (e, s) => {
         const these = fm.filter((r) => r.state === s);
         const name = these[0]?.state_name || s;
