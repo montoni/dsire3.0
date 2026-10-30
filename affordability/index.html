@@ -435,8 +435,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     fillSelect('status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed'].filter((t) => rows.some((r) => r.bill_status === t)));
     if (q !== document.activeElement) q.value = p.q ?? '';
     const stateNames = [...new Map(rows.map((r) => [r.state, r.state_name])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
-    stateSel.replaceChildren(new Option(p.state?.length ? `Add a state (${p.state.length} of ${MAX_STATES})` : 'All states', ''),
-    ...stateNames.map(([s, n]) => new Option((p.state?.includes(s) ? '✓ ' : '') + n, s)));
+    stateSel.replaceChildren(new Option(p.state?.length ? `Add a state (${p.state.length} of ${MAX_STATES})` : 'All states', ''), stateNames.map(([s, n]) => new Option((p.state?.includes(s) ? '✓ ' : '') + n, s)));
     stateSel.value = '';
     $('.ea-state-chips').replaceChildren(...(p.state || []).map((s) => {
       const b = document.createElement('button'); b.className = 'ea-btn ea-chip';
