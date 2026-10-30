@@ -97,6 +97,21 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   #dash-root .ea-layout { grid-template-columns: minmax(0, 1fr); }
   #dash-root .ea-side { position: static; max-height: none; }
 }
+#dash-root .ea-statecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); }
+#dash-root .ea-statecards:empty { display: none; }
+#dash-root .ea-sc-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); }
+#dash-root .ea-sc-close { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg-muted); background: none; border: 0; cursor: pointer; padding: 0 2px; line-height: 1; }
+#dash-root .ea-sc-close:hover { color: var(--color-fg); }
+#dash-root .ea-sc-total { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin: var(--cds-gap-xs) 0 0; }
+#dash-root .ea-sc-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-md); }
+#dash-root .ea-sc-cats { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--cds-gap-md); }
+#dash-root .ea-sc-cat { display: grid; grid-template-columns: minmax(0, 1fr) 4rem 1.75rem; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); }
+#dash-root .ea-sc-cat .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#dash-root .ea-sc-cat .b { height: .5rem; border-radius: 3px; min-width: 2px; }
+#dash-root .ea-sc-cat .c { text-align: right; font-variant-numeric: tabular-nums; }
+#dash-root .ea-sc-cat.zero { color: var(--color-fg-muted); }
+#dash-root .ea-sc-top { font-size: var(--cds-font-size-caption); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-gap-sm); }
+#dash-root .ea-sc-top span { color: var(--color-fg-muted); display: block; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
@@ -165,8 +180,10 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     <div class="ea-legend"><span>Fewer</span><span class="bar ea-ramp"></span><span>More</span><span class="ea-legend-max"></span></div>
     <div class="ea-tip" hidden></div>
   </div>
+  
+  <div class="ea-statecards"></div>
 
-  <div class="ea-card" id="category-maps">
+  <div class="ea-card" id="category-maps" hidden>
     <h2>Category maps</h2>
     <p class="ea-note">One map per category, using every filter except category. An action counts in each category it is tagged with; when a sub-topic is selected, only where that sub-topic belongs to the category. Click a map to filter by that category.</p>
     <div class="ea-smalls" data-source="actions"></div>
@@ -457,6 +474,38 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     });
     $('.ea-ramp').style.background = `linear-gradient(90deg, color-mix(in srgb, ${dash.colors[0]} 15%, transparent), ${dash.colors[0]})`;
     $('.ea-legend-max').textContent = `(max ${fmt(max)} per state)`;
+        // state summary cards (one per selected state, same filters as the rest except state)
+    const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+    $('.ea-statecards').replaceChildren(...(p.state || []).map((s) => {
+      const these = fm.filter((r) => r.state === s);
+      const name = (rows.find((r) => r.state === s) || {}).state_name || s;
+      const card = el('div', 'ea-card ea-statecard');
+      card.dataset.source = 'actions';
+      const head = el('div', 'ea-sc-head');
+      const close = el('button', 'ea-sc-close', '×');
+      close.setAttribute('aria-label', 'Remove ' + name);
+      close.addEventListener('click', () => toggleState(s));
+      head.append(el('h2', null, name), close);
+      card.append(head, el('div', 'ea-sc-total', fmt(these.length)), el('p', 'ea-sc-label', these.length === 1 ? 'action' : 'actions'));
+      const counts = CATS.map((c) => [c, these.filter((r) => r._cats.includes(c) && (!p.sub || subsFor(r, c).includes(p.sub))).length]);
+      const cmax = d3.max(counts, (d) => d[1]) || 1;
+      const list = el('div', 'ea-sc-cats');
+      counts.forEach(([c, n]) => {
+        const row = el('div', 'ea-sc-cat' + (n ? '' : ' zero'));
+        const nm = el('span', 'n', c); nm.title = c;
+        const wrap = el('span'); const b = el('div', 'b'); b.style.width = (n / cmax * 100) + '%'; b.style.background = n ? catColor(c) : 'transparent'; wrap.append(b);
+        row.append(nm, wrap, el('span', 'c', fmt(n)));
+        list.append(row);
+      });
+      card.append(list);
+      const sc = d3.rollup(these.flatMap((r) => p.cat ? subsFor(r, p.cat) : r._subs), (v) => v.length, (x) => x);
+      const top = [...sc].sort((a, b) => b[1] - a[1] || d3.ascending(a[0], b[0]));
+      const tied = top.filter((d) => top.length && d[1] === top[0][1]).map((d) => d[0]);
+      const t = el('div', 'ea-sc-top');
+      t.append(el('span', null, 'Most common sub-topic'), document.createTextNode(top.length ? `${tied.join(', ')} (${fmt(top[0][1])})` : 'None'));
+      card.append(t);
+      return card;
+    }));
 
     // category small multiples (all filters except cat)
     const fc = rows.filter((r) => matches(r, p, 'cat'));
