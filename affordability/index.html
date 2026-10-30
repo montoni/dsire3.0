@@ -316,9 +316,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     if (next.length > MAX_STATES) next = next.slice(-MAX_STATES); // drop the oldest pick
     dash.setParams({ state: next.length ? next : null });
     const stateSel = $('.ea-statesel');
-    stateSel.addEventListener('change', () => { if (stateSel.value) toggleState(stateSel.value); stateSel.value = ''; });
-  };
-  const fillSelect = (k, values) => {
+    stateSel.addEventListener('change', () => { if (stateSel.value) toggleState(stateSel.value); stateSel.value = ''; });};
+    const fillSelect = (k, values) => {
     const el = sel[k], cur = dash.params()[k] ?? '';
     el.replaceChildren(new Option(allLabel[k], ''), ...values.map((v) => new Option(v, v)));
     el.value = values.includes(cur) ? cur : '';
