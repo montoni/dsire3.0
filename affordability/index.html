@@ -122,7 +122,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 <script>
 // Minimal stand-in for the Claude dashboard runtime: loads data/actions.json and provides dash.data / onData / params.
 (() => {
-  const defaults = { q: null, cat: null, sub: null, type: null, status: null, state: null };
+  const defaults = { q: null, cat: null, sub: null, type: null, status: null, pstatus: null, state: null };
   let params = { ...defaults };
   let ds = { status: 'loading', data: [] };
   const cbs = [];
@@ -162,6 +162,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     <select class="ea-sub" aria-label="Sub-topic"></select>
     <select class="ea-type" aria-label="Action type"></select>
     <select class="ea-status" aria-label="Bill status"></select>
+    <select class="ea-pstatus" aria-label="Proceeding status"></select>
     <select class="ea-statesel" aria-label="State"></select>
     <div class="ea-state-chips"></div>
     <button class="ea-btn ea-reset">Reset filters</button>
@@ -218,6 +219,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
           <th data-field="subtopics" class="ea-hide-narrow"><button data-sort="subtopics">Sub-topics</button></th>
           <th data-field="action_type"><button data-sort="action_type">Type</button></th>
           <th data-field="bill_status" class="ea-hide-narrow"><button data-sort="bill_status">Bill status</button></th>
+          <th data-field="proceeding_status" class="ea-hide-narrow"><button data-sort="proceeding_status">Proceeding status</button></th>
           <th data-field="description">Description</th>
           <th data-field="sources" class="ea-hide-narrow">Sources</th>
         </tr></thead>
@@ -272,7 +274,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     OR:[3,1],NV:[3,2],WY:[3,3],SD:[3,4],IA:[3,5],IN:[3,6],OH:[3,7],PA:[3,8],NJ:[3,9],CT:[3,10],RI:[3,11],CA:[4,1],UT:[4,2],CO:[4,3],NE:[4,4],MO:[4,5],KY:[4,6],WV:[4,7],VA:[4,8],MD:[4,9],DE:[4,10],
     AZ:[5,2],NM:[5,3],KS:[5,4],AR:[5,5],TN:[5,6],NC:[5,7],SC:[5,8],DC:[5,9],OK:[6,4],LA:[6,5],MS:[6,6],AL:[6,7],GA:[6,8],HI:[7,0],TX:[7,4],FL:[7,9],PR:[7,11]};
   const split = (s) => (s || '').split(';').map((x) => x.trim()).filter(Boolean);
-  const KEYS = ['q', 'cat', 'sub', 'type', 'status', 'state'];
+  const KEYS = ['q', 'cat', 'sub', 'type', 'status', 'pstatus', 'state'];
 
   let sortKey = 'state_name', sortDir = 1;
   const opened = new Set();
@@ -297,13 +299,14 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     }
     if (except !== 'type' && p.type && r.action_type !== p.type) return false;
     if (except !== 'status' && p.status && r.bill_status !== p.status) return false;
+    if (except !== 'pstatus' && p.pstatus && r.proceeding_status !== p.pstatus) return false;
     if (except !== 'state' && p.state?.length && !p.state.includes(r.state)) return false;
     return true;
   };
 
   // ---------- controls
-  const sel = { cat: $('.ea-cat'), sub: $('.ea-sub'), type: $('.ea-type'), status: $('.ea-status') };
-  const allLabel = { cat: 'All categories', sub: 'All sub-topics', type: 'All action types', status: 'Any bill status' };
+  const sel = { cat: $('.ea-cat'), sub: $('.ea-sub'), type: $('.ea-type'), status: $('.ea-status'), pstatus: $('.ea-pstatus') };
+  const allLabel = { cat: 'All categories', sub: 'All sub-topics', type: 'All action types', status: 'Any bill status', pstatus: 'Any proceeding status' };
   Object.entries(sel).forEach(([k, el]) => el.addEventListener('change', () => dash.setParams({ [k]: el.value || null })));
   const q = $('.ea-q');
   let qTimer;
@@ -432,7 +435,10 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     if (p.sub && !subOpts.includes(p.sub)) { dash.setParams({ sub: null }); return; }
     fillSelect('sub', subOpts);
     fillSelect('type', ['Legislation', 'Regulatory proceeding', 'Executive & other'].filter((t) => rows.some((r) => r.action_type === t)));
-    fillSelect('status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed'].filter((t) => rows.some((r) => r.bill_status === t)));
+    const ordered = (field, order) => [...new Set(rows.map((r) => r[field]).filter(Boolean))]
+      .sort((a, b) => ((order.indexOf(a) + 1) || 99) - ((order.indexOf(b) + 1) || 99) || a.localeCompare(b));
+    fillSelect('status', ordered('bill_status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed']));
+    fillSelect('pstatus', ordered('proceeding_status', ['Open', 'Closed']));sel.pstatus.hidden = !rows.some((r) => r.proceeding_status);
     if (q !== document.activeElement) q.value = p.q ?? '';
     const stateNames = [...new Map(rows.map((r) => [r.state, r.state_name])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
         stateSel.replaceChildren(new Option(p.state?.length ? `Add a state (${p.state.length} of ${MAX_STATES})` : 'All states', ''),
@@ -573,7 +579,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       const tr = document.createElement('tr'); tr.dataset.key = r.id; if (opened.has(r.id)) tr.className = 'open';
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; c.textContent = text; return c; };
       const desc = document.createElement('td'); const dv = document.createElement('div'); dv.className = 'ea-desc'; dv.textContent = r.description; desc.append(dv);
-      tr.append(td(r.state_name), td(r.categories, 'ea-tags'), td(r.subtopics, 'ea-tags ea-hide-narrow'), td(r.action_type), td(r.bill_status, 'ea-hide-narrow'), desc, srcCell(r));
+      tr.append(td(r.state_name), td(r.categories, 'ea-tags'), td(r.subtopics, 'ea-tags ea-hide-narrow'), td(r.action_type), td(r.bill_status, 'ea-hide-narrow'), td(r.proceeding_status || '', 'ea-hide-narrow'), desc, srcCell(r));
       return tr;
     }));
     $('.ea-count').textContent = `Showing ${fmt(f.length)} of ${fmt(rows.length)} actions.`;
