@@ -22,6 +22,8 @@
   --cds-surface-popover:#2e2d2b; --cds-border:#3a3836; --cds-shadow-popover:0 4px 16px rgba(0,0,0,.5); --cds-text-secondary:#a3a19c;
 }}
 html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);}
+#dash-root .ea-home { display: inline-block; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-decoration: none; margin-bottom: var(--cds-gap-sm); }
+#dash-root .ea-home:hover { color: var(--color-fg); text-decoration: underline; }
 #dash-root{max-width:90rem;margin:0 auto;padding:clamp(1rem,3vw,2.5rem);box-sizing:border-box;}
 #dash-root .dash-skeleton{color:transparent;background:var(--color-border-line);border-radius:4px;}
 #dash-root .ea-map.dash-skeleton,#dash-root .ea-bars.dash-skeleton{min-height:10rem;}
@@ -146,6 +148,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 
 <div class="ea">
   <div class="ea-head" id="top">
+    <a class="ea-home" href="../">← All trackers</a>
     <h1>50 States of Energy Affordability: September 2026 actions</h1>
     <p class="ea-take dash-skeleton" data-source="actions">—</p>
   </div>
@@ -159,6 +162,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     <select class="ea-sub" aria-label="Sub-topic"></select>
     <select class="ea-type" aria-label="Action type"></select>
     <select class="ea-status" aria-label="Bill status"></select>
+    <select class="ea-statesel" aria-label="State"></select>
     <div class="ea-state-chips"></div>
     <button class="ea-btn ea-reset">Reset filters</button>
   </div>
@@ -311,6 +315,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     let next = cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s];
     if (next.length > MAX_STATES) next = next.slice(-MAX_STATES); // drop the oldest pick
     dash.setParams({ state: next.length ? next : null });
+    const stateSel = $('.ea-statesel');
+    stateSel.addEventListener('change', () => { if (stateSel.value) toggleState(stateSel.value); stateSel.value = ''; });
   };
   const fillSelect = (k, values) => {
     const el = sel[k], cur = dash.params()[k] ?? '';
@@ -428,6 +434,10 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     fillSelect('type', ['Legislation', 'Regulatory proceeding', 'Executive & other'].filter((t) => rows.some((r) => r.action_type === t)));
     fillSelect('status', ['Enacted', 'Passed both chambers', 'Passed one chamber', 'Vetoed', 'Failed'].filter((t) => rows.some((r) => r.bill_status === t)));
     if (q !== document.activeElement) q.value = p.q ?? '';
+    const stateNames = [...new Map(rows.map((r) => [r.state, r.state_name])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    stateSel.replaceChildren(new Option(p.state?.length ? `Add a state (${p.state.length} of ${MAX_STATES})` : 'All states', ''),
+    ...stateNames.map(([s, n]) => new Option((p.state?.includes(s) ? '✓ ' : '') + n, s)));
+    stateSel.value = '';
     $('.ea-state-chips').replaceChildren(...(p.state || []).map((s) => {
       const b = document.createElement('button'); b.className = 'ea-btn ea-chip';
       b.textContent = ((rows.find((r) => r.state === s) || {}).state_name || s) + ' ×';
